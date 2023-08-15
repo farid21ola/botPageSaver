@@ -16,6 +16,22 @@ func New(db *pgxpool.Pool) *Storage {
 	return &Storage{DB: db}
 }
 
+func (s *Storage) CreateTable(ctx context.Context) error {
+	q := `CREATE TABLE IF NOT EXISTS "Page" (
+    "id"       serial                   NOT NULL,
+    "URL"      character varying UNIQUE NOT NULL,
+    "UserName" character varying        NOT NULL,
+    CONSTRAINT "Page_pk" PRIMARY KEY ("id")
+) WITH (
+      OIDS= FALSE
+    );`
+	if _, err := s.DB.Exec(ctx, q); err != nil {
+		return fmt.Errorf("can't create table/table exist: %w", err)
+	}
+	return nil
+
+}
+
 func (s *Storage) PickRandom(ctx context.Context, userName string) (*storage.Page, error) {
 	page := storage.Page{
 		URL:      "",
@@ -53,6 +69,10 @@ func (s *Storage) Save(ctx context.Context, p *storage.Page) error {
 }
 
 func (s *Storage) IsExists(ctx context.Context, p *storage.Page) (bool, error) {
+	if e := s.CreateTable(ctx); e != nil {
+		return false, fmt.Errorf("can't create page: %w", e)
+	}
+
 	q := `SELECT COUNT(*) FROM "Page" WHERE "URL" = $1 AND "UserName" = $2`
 
 	var count int

@@ -10,13 +10,13 @@ func NewPoolPostgres(config string) (*pgxpool.Pool, error) {
 	url := config
 	DB, err := pgxpool.New(context.Background(), url)
 	if err != nil {
-		fmt.Println("не удалось подключиться к DataBase Link: ", err)
+		fmt.Println("can't connect to DataBase Link: ", err)
 		return nil, err
 	}
 	if err := DB.Ping(context.Background()); err != nil {
-		fmt.Println("не удалось пингануть к DataBase Link: ", err)
+		fmt.Println("can't ping DataBase Link: ", err)
 		return nil, err
 	}
-	fmt.Println("подключён успешно postgres")
+	fmt.Println("connected to postgres")
 	return DB, nil
 }

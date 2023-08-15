@@ -1,13 +1,14 @@
 package config
 
 import (
-	"flag"
+	"github.com/spf13/viper"
 	"log"
+	"os"
 )
 
 const (
-	token      = ""
-	connString = ""
+	databaseURLKey = "DATABASE_URL"
+	tgtokenKey     = "TG_TOKEN"
 )
 
 type Config struct {
@@ -16,27 +17,30 @@ type Config struct {
 }
 
 func MustLoad() Config {
-	token := flag.String("token-bot-token",
-		token,
-		"token for access to telegram bot",
-	)
-	flag.Parse()
-
-	ConnectionString := flag.String(
-		"postgresql-connection-string",
-		connString,
-		"connection string for Postgresql",
-	)
-
-	if *ConnectionString == "" {
-		log.Fatal("connection string is not specified")
+	if err := initConfig(); err != nil {
+		log.Println("can't initialize config: ", err)
 	}
-	if *token == "" {
-		log.Fatal("token is not specified")
+
+	dbConfig := os.Getenv(databaseURLKey)
+	if dbConfig == "" {
+		log.Println("empty env config")
+		dbConfig = viper.GetString(databaseURLKey)
+	}
+
+	tgToken := os.Getenv(tgtokenKey)
+	if tgToken == "" {
+		log.Println("empty tg token")
+		tgToken = viper.GetString(tgtokenKey)
 	}
 
 	return Config{
-		*token,
-		*ConnectionString,
+		tgToken,
+		dbConfig,
 	}
+}
+
+func initConfig() error {
+	viper.AddConfigPath("config")
+	viper.SetConfigName("cfg")
+	return viper.ReadInConfig()
 }

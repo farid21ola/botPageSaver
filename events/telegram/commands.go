@@ -91,7 +91,7 @@ func (p *Processor) sendHello(ctx context.Context, chatID int) error {
 	return p.tg.SendMessage(ctx, chatID, msgHello)
 }
 
-func isURL(text string) bool {
+func isURL(text string) bool { //google.com не читается, изменить
 	u, err := url.Parse(text)
 
 	return err == nil && u.Host != ""
